@@ -18,17 +18,19 @@ redisClient.on("error", (err) => console.log(err));
 
 const getAllSimulations = () => {
   return new Promise((resolve, reject) =>
-    redisClient.lrange(SIMULATION_DATA_QUEUE_LABEL, 0, -1, (err, queue) =>
-      resolve(JSON.parse(queue))
-    )
+    redisClient.lrange(SIMULATION_DATA_QUEUE_LABEL, 0, -1, (err, queue) => {
+        console.log("queue: ", queue)
+        resolve(queue.map(JSON.parse))
+      })
   );
 };
 
 const getAllSimulationsResults = () => {
   return new Promise((resolve, reject) =>
-    redisClient.lrange(SIMULATION_RESULT_QUEUE_LABEL, 0, -1, (err, queue) =>
-      resolve(JSON.parse(queue))
-    )
+    redisClient.lrange(SIMULATION_RESULT_QUEUE_LABEL, 0, -1, (err, queue) => {
+      console.log("queue: ", queue)
+      resolve(queue.map(JSON.parse))
+    })
   );
 };
 
@@ -50,7 +52,7 @@ app.delete("/api/deleteAllSimulations", (req, res) => {
   );
 });
 
-app.delete("/api/deleteAllSimulationsResults", (req, res) => {
+app.delete("/api/deleteAllSimulationResults", (req, res) => {
   redisClient.del(SIMULATION_RESULT_QUEUE_LABEL, () =>
     getAllSimulationsResults().then((queue) => res.json(queue))
   );
