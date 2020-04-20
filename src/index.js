@@ -19,7 +19,6 @@ redisClient.on("error", (err) => console.log(err));
 const getAllSimulations = () => {
   return new Promise((resolve, reject) =>
     redisClient.lrange(SIMULATION_DATA_QUEUE_LABEL, 0, -1, (err, queue) => {
-        console.log("queue: ", queue)
         resolve(queue.map(JSON.parse))
       })
   );
@@ -28,7 +27,6 @@ const getAllSimulations = () => {
 const getAllSimulationsResults = () => {
   return new Promise((resolve, reject) =>
     redisClient.lrange(SIMULATION_RESULT_QUEUE_LABEL, 0, -1, (err, queue) => {
-      console.log("queue: ", queue)
       resolve(queue.map(JSON.parse))
     })
   );
@@ -59,7 +57,6 @@ app.delete("/api/deleteAllSimulationResults", (req, res) => {
 });
 
 app.post("/api/pushSimulation", (req, res) => {
-  console.log(req.body);
   redisClient.lpush(SIMULATION_DATA_QUEUE_LABEL, JSON.stringify(req.body), () =>
     getAllSimulations().then((queue) => res.json(queue))
   );
