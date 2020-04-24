@@ -18,21 +18,21 @@ const POPULATION_QUEUE_LABEL = "queue:population";
 const redisClient = redis.createClient();
 redisClient.on("error", (err) => console.log(err));
 
-const getAllFromQueue = (label) =>  new Promise((resolve, reject) =>
+const peekAllInQueue = (label) =>  new Promise((resolve, reject) =>
   redisClient.lrange(label, 0, -1, (err, queue) => {
     resolve(queue.map(JSON.parse))
   })
 );
 
 const getAllSimulations = () => {
-  return getAllFromQueue(SIMULATION_DATA_QUEUE_LABEL)
+  return peekAllInQueue(SIMULATION_DATA_QUEUE_LABEL)
 };
 
 const getAllSimulationsResults = () => {
-  return getAllFromQueue(SIMULATION_RESULT_QUEUE_LABEL)
+  return peekAllInQueue(SIMULATION_RESULT_QUEUE_LABEL)
 };
 
-const getAllPopulations = () => getAllFromQueue(POPULATION_QUEUE_LABEL)
+const getAllPopulations = () => peekAllInQueue(POPULATION_QUEUE_LABEL)
 
 app.get("/api/simulationQueueConnected", (req, res) =>
   res.json(redisClient.connected)
@@ -70,5 +70,11 @@ app.get("/api/populations", (req, res) =>
     res.json(queue)
   })
 );
+
+app.delete("/api/deleteAllPopulations", (req, res) =>
+  redisClient.del(POPULATION_QUEUE_LABEL, () => {
+    getAllPopulations().then(res.json)
+  })
+)
 
 app.listen(port, () => console.log(`Server listening on port ${port}!`));
